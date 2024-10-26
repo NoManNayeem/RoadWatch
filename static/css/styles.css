@@ -1,0 +1,35 @@
+/* styles.css */
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #333;
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card-body img {
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.card-body h4 {
+    color: #007bff;
+}
+
+p {
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+}
+
+#videoFeed {
+    border-radius: 8px;
+}

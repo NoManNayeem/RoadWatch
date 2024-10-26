@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadWatch - Traffic Monitoring</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">RoadWatch - Traffic Monitoring System</h1>
+        <div class="btn-group mb-3" role="group">
+            <button onclick="setVideoSource('camera')" class="btn btn-primary">Live Camera</button>
+            <button onclick="setVideoSource('video')" class="btn btn-secondary">Demo Traffic Video</button>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <img src="{{ url_for('video_feed', source='camera') }}" width="100%" alt="Live video feed" id="videoFeed">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Real-Time Statistics</h4>
+                        <div id="liveStats" style="display: none;">
+                            <p>Tracked Object: <span id="trackedObject">N/A</span></p>
+                            <p>Count: <span id="objectCount">0</span></p>
+                            <p>Detection Confidence: <span id="detectionConfidence">0</span>%</p>
+                        </div>
+                        <div id="demoStats" style="display: none;">
+                            <p>Total Vehicles: <span id="vehicleCount">0</span></p>
+                            <p>Cars: <span id="carCount">0</span></p>
+                            <p>Trucks: <span id="truckCount">0</span></p>
+                            <p>Motorcycles: <span id="motorcycleCount">0</span></p>
+                            <p>Max Speed: <span id="maxSpeed">0</span> km/h</p>
+                            <p>Min Speed: <span id="minSpeed">0</span> km/h</p>
+                            <p>Avg Speed: <span id="avgSpeed">0</span> km/h</p>
+                            <p>Vehicle Colors: <span id="colors">N/A</span></p>
+                            <p>Number Plates: <span id="plates">N/A</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSource = "camera";
+
+        function setVideoSource(source) {
+            currentSource = source;
+            const videoFeed = document.getElementById("videoFeed");
+            videoFeed.src = `/video_feed?source=${source}`;
+
+            if (source === "video") {
+                document.getElementById("demoStats").style.display = "block";
+                document.getElementById("liveStats").style.display = "none";
+            } else {
+                document.getElementById("liveStats").style.display = "block";
+                document.getElementById("demoStats").style.display = "none";
+            }
+            fetchStats();
+        }
+
+        function fetchStats() {
+            const eventSource = new EventSource(`/stats_feed?source=${currentSource}`);
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+
+                if (currentSource === "video") {
+                    document.getElementById("vehicleCount").textContent = data.vehicle_count;
+                    document.getElementById("carCount").textContent = data.car_count;
+                    document.getElementById("truckCount").textContent = data.truck_count;
+                    document.getElementById("motorcycleCount").textContent = data.motorcycle_count;
+                    document.getElementById("maxSpeed").textContent = data.max_speed;
+                    document.getElementById("minSpeed").textContent = data.min_speed;
+                    document.getElementById("avgSpeed").textContent = data.avg_speed;
+                    document.getElementById("colors").textContent = data.colors.join(", ");
+                    document.getElementById("plates").textContent = data.number_plates.join(", ");
+                } else {
+                    document.getElementById("trackedObject").textContent = data.tracked_objects;
+                    document.getElementById("objectCount").textContent = data.count;
+                    document.getElementById("detectionConfidence").textContent = data.detection_confidence;
+                }
+            };
+        }
+
+        setVideoSource('camera');
+    </script>
+</body>
+</html>
